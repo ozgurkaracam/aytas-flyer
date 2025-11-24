@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <title><%= campaign.title %></title>
+    <style>
+      * {
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        background: #f5f7fb;
+      }
+      .page {
+        width: 210mm;
+        height: 297mm;
+        padding: 10mm;
+        background: #ffffff;
+      }
+      .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10mm;
+        border-bottom: 2px solid #eee;
+        padding-bottom: 4mm;
+      }
+      .logo {
+        font-size: 36px;
+        font-weight: 700;
+      }
+      .info {
+        text-align: right;
+        font-size: 12px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        grid-gap: 6mm;
+      }
+      .card {
+        border-radius: 8px;
+        padding: 4mm;
+        background: #fff;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      .card img {
+        max-width: 100%;
+        max-height: 60mm;
+        margin: 0 auto 4mm;
+        object-fit: contain;
+      }
+      .card-title {
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 2mm;
+      }
+      .card-desc {
+        font-size: 11px;
+        color: #555;
+        min-height: 15px;
+        margin-bottom: 3mm;
+      }
+      .card-bottom {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .price {
+        font-size: 18px;
+        font-weight: 800;
+      }
+      .price span {
+        font-size: 11px;
+        vertical-align: super;
+      }
+      .badge {
+        padding: 1mm 3mm;
+        border-radius: 999px;
+        font-size: 9px;
+        color: #fff;
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="header">
+        <div class="logo">Aytas Wereld Supermarkt</div>
+        <div class="info">
+          <div><%= campaign.validText || '' %></div>
+          <div>Tel: 06 41 98 40 65</div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <% campaign.products.forEach(function(p) { const product = p.product; %>
+        <div class="card">
+          <% if (product.imageUrl) { %>
+          <img src="<%= product.imageUrl %>" />
+          <% } %>
+          <div class="card-title"><%= product.name %></div>
+          <div class="card-desc"><%= product.description || '' %></div>
+          <div class="card-bottom">
+            <div class="price">
+              €<%= product.price.toFixed(2) %> <% if (product.unit) { %>
+              <span>/<%= product.unit %></span>
+              <% } %>
+            </div>
+            <% if (product.badgeText) { %>
+            <div
+              class="badge"
+              style="background: <%= product.badgeColor || '#e74c3c' %>"
+            >
+              <%= product.badgeText %>
+            </div>
+            <% } %>
+          </div>
+        </div>
+        <% }) %>
+      </div>
+    </div>
+  </body>
+</html>
