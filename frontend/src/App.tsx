@@ -210,11 +210,8 @@ function App() {
     const totalHeight = containerRef.current?.offsetHeight ?? 1200;
     const headerHeight = headerRef.current?.offsetHeight ?? 250;
     const totalItems = Math.max(productCount, 1);
-    const baseColumnGuess = Math.floor(Math.sqrt(totalItems));
-    const columns = Math.max(
-      1,
-      Math.min(5, Math.ceil(totalItems / Math.max(baseColumnGuess, 1)))
-    );
+    const idealColumns = Math.ceil(Math.sqrt(totalItems));
+    const columns = Math.max(1, Math.min(5, idealColumns));
     const rows = Math.max(1, Math.ceil(totalItems / columns));
 
     let padding = 30;
@@ -343,10 +340,23 @@ function App() {
     handleImageFile(file);
   };
 
+  const waitForFrames = (count = 1) =>
+    new Promise<void>((resolve) => {
+      const step = (remaining: number) => {
+        if (remaining <= 0) {
+          resolve();
+          return;
+        }
+        requestAnimationFrame(() => step(remaining - 1));
+      };
+      step(count);
+    });
+
   const handleDownloadPreview = async () => {
     if (!containerRef.current || isDownloading) return;
     try {
       setIsDownloading(true);
+      await waitForFrames(2);
       const dataUrl = await toPng(containerRef.current, {
         cacheBust: true,
         width: 1200,
@@ -632,7 +642,9 @@ function App() {
                     <div
                       key={product.id}
                       className={`product-card ${product.theme} ${
-                        isSelected ? "product-card--active" : ""
+                        isSelected && !isDownloading
+                          ? "product-card--active"
+                          : ""
                       }`}
                       role="button"
                       tabIndex={0}
@@ -646,7 +658,7 @@ function App() {
                       aria-pressed={isSelected}
                       aria-label={`${product.name} düzenle`}
                     >
-                      {isSelected && (
+                      {isSelected && !isDownloading && (
                         <span className="edit-indicator">Düzenleniyor</span>
                       )}
                       <div className="paint-layer"></div>

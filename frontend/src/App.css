@@ -370,14 +370,14 @@
   outline-offset: 4px;
 }
 
-.product-card--active {
+/* .product-card--active {
   transform: translateY(-6px) scale(1.02);
   box-shadow: 0 16px 30px rgba(0, 0, 0, 0.35);
 }
 
 .product-card--active .paint-layer {
   opacity: 0.65;
-}
+} */
 
 .edit-indicator {
   position: absolute;
