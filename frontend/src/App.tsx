@@ -571,7 +571,7 @@ function App() {
         <section className="panel panel--preview">
           <header>
             <h2>Canlı Önizleme</h2>
-            <p>test.html tasarımının birebir React yorumu.</p>
+            <p>Aytas Supermarkt</p>
           </header>
           <div className="preview-wrapper">
             <div className="preview-frame" ref={containerRef}>
@@ -588,11 +588,29 @@ function App() {
                 ref={gridRef}
                 style={gridStyle}
               >
-                {products.map((product) => (
+                {products.map((product, index) => {
+                  const isSelected = index === selectedIndex;
+                  return (
                   <div
-                    key={product.id}
-                    className={`product-card ${product.theme}`}
-                  >
+                      key={product.id}
+                      className={`product-card ${product.theme} ${
+                        isSelected ? "product-card--active" : ""
+                      }`}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => handleSelectProduct(index)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          handleSelectProduct(index);
+                        }
+                      }}
+                      aria-pressed={isSelected}
+                      aria-label={`${product.name} düzenle`}
+                    >
+                      {isSelected && (
+                        <span className="edit-indicator">Düzenleniyor</span>
+                      )}
                     <div className="paint-layer"></div>
                     <div className="img-container">
                       <img
@@ -618,7 +636,8 @@ function App() {
                       <span className="prod-desc">{product.desc}</span>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
