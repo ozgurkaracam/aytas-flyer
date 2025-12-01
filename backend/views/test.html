@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Aytas Insert Tasarımı</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@500;700&family=Roboto:wght@400;900&display=swap");
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background-color: #333;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        font-family: "Roboto", sans-serif;
+      }
+
+      .container {
+        width: 1200px;
+        height: 1200px;
+        background: white;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .header {
+        width: 100%;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 20;
+        box-shadow: none;
+      }
+
+      .header img {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      .header::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 40px;
+        background: linear-gradient(
+          to top,
+          rgba(235, 235, 235, 1) 0%,
+          rgba(235, 235, 235, 0) 100%
+        );
+        z-index: 25;
+        pointer-events: none;
+      }
+
+      .products-grid {
+        flex-grow: 1;
+        padding: var(--grid-padding);
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        grid-auto-rows: var(--grid-row-height);
+        gap: var(--grid-gap);
+        overflow: hidden;
+
+        background: linear-gradient(
+          to bottom,
+          #ebebeb 0%,
+          #f5f5f5 15%,
+          #ffffff 40%
+        );
+      }
+
+      .product-card {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        overflow: hidden;
+      }
+
+      .paint-layer {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -60%) rotate(-10deg);
+        width: 70%;
+        height: 50%;
+        border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+        opacity: 0.5;
+        z-index: 0;
+      }
+
+      .theme-yellow .paint-layer {
+        background-color: #ffd700;
+      }
+      .theme-red .paint-layer {
+        background-color: #ff4500;
+      }
+      .theme-green .paint-layer {
+        background-color: #32cd32;
+      }
+      .theme-blue .paint-layer {
+        background-color: #00bfff;
+      }
+      .theme-orange .paint-layer {
+        background-color: #ff8c00;
+      }
+      .theme-pink .paint-layer {
+        background-color: #ff69b4;
+      }
+
+      .img-container {
+        position: relative;
+        width: 100%;
+        height: 65%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1;
+      }
+
+      .prod-img {
+        border-radius: 20px;
+        max-width: 90%;
+        max-height: 90%;
+        object-fit: contain;
+        filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.3));
+      }
+
+      .badge-weight {
+        position: absolute;
+        top: 2%;
+        right: 2%;
+        width: calc(var(--base-size) * 3);
+        height: calc(var(--base-size) * 3);
+        background: #000;
+        color: #fff;
+        border-radius: 50%;
+        border: 2px solid #fff;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        line-height: 0.9;
+      }
+      .bw-val {
+        font-size: calc(var(--base-size) * 1.2);
+        font-weight: 900;
+      }
+      .bw-unit {
+        font-size: calc(var(--base-size) * 0.6);
+      }
+
+      .badge-price {
+        position: absolute;
+        bottom: 25%;
+        right: 0;
+        width: calc(var(--base-size) * 4.2);
+        height: calc(var(--base-size) * 4.2);
+        background: #e60000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+        color: white;
+        transform: rotate(-10deg);
+        clip-path: polygon(
+          20% 0%,
+          32% 15%,
+          50% 0%,
+          60% 18%,
+          80% 5%,
+          78% 28%,
+          95% 30%,
+          80% 50%,
+          98% 70%,
+          75% 75%,
+          80% 95%,
+          60% 85%,
+          45% 98%,
+          35% 80%,
+          15% 95%,
+          20% 70%,
+          0% 65%,
+          15% 45%,
+          2% 25%,
+          25% 25%
+        );
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+      }
+
+      .price-wrap {
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        font-family: "Anton", sans-serif;
+        text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.3);
+        margin-top: 5px;
+      }
+      .cur {
+        font-size: calc(var(--base-size) * 0.8);
+        margin-top: 2px;
+      }
+      .p-main {
+        font-size: calc(var(--base-size) * 1.8);
+        font-weight: 400;
+        line-height: 1;
+      }
+      .p-cent {
+        font-size: calc(var(--base-size) * 1);
+        margin-top: 2px;
+        text-decoration: underline;
+      }
+
+      .text-container {
+        width: 100%;
+        height: 35%;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        padding-top: 5px;
+        z-index: 5;
+        position: relative;
+      }
+
+      .brand-name {
+        font-family: "Oswald", sans-serif;
+        font-weight: 700;
+        font-size: calc(var(--base-size) * 1.4);
+        text-transform: uppercase;
+        line-height: 1.1;
+        text-align: center;
+        text-shadow: 2px 2px 0 #fff, -1px -1px 0 #fff, 0 0 5px #fff;
+        width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .prod-desc {
+        font-family: "Oswald", sans-serif;
+        font-weight: 500;
+        font-size: calc(var(--base-size) * 0.9);
+        color: #333;
+        text-align: center;
+        line-height: 1.2;
+        text-shadow: 1px 1px 0 #fff;
+        width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .color-red .brand-name {
+        color: #d0021b;
+      }
+      .color-gold .brand-name {
+        color: #b8860b;
+      }
+      .color-green .brand-name {
+        color: #006400;
+      }
+      .color-blue .brand-name {
+        color: #00008b;
+      }
+      .color-dark .brand-name {
+        color: #000;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <img src="./headermarket.png" alt="Header" />
+      </div>
+      <div class="products-grid" id="grid"></div>
+    </div>
+
+    <script>
+      // const carImg =
+      //   "https://api.aytassupermarkt.com/storage/app/public/category/2023-05-27-6472098d41eea.png";
+
+      const carImg = "kasar.png";
+
+      const baseProducts = [
+        {
+          name: "Çaykur",
+          desc: "Rize Çayı",
+          w: "500",
+          u: "gr",
+          p: "2",
+          c: "99",
+          theme: "theme-yellow",
+          col: "color-gold",
+        },
+        {
+          name: "Mahmut",
+          desc: "Basmati Pirinç",
+          w: "5",
+          u: "kg",
+          p: "9",
+          c: "99",
+          theme: "theme-red",
+          col: "color-red",
+        },
+        {
+          name: "Eker",
+          desc: "Kaşar Peyniri",
+          w: "200",
+          u: "gr",
+          p: "2",
+          c: "49",
+          theme: "theme-pink",
+          col: "color-red",
+        },
+        {
+          name: "Koç",
+          desc: "Parmak Sucuk",
+          w: "450",
+          u: "gr",
+          p: "5",
+          c: "49",
+          theme: "theme-green",
+          col: "color-green",
+        },
+        {
+          name: "Efe Paşa",
+          desc: "Dilimli Salam",
+          w: "200",
+          u: "gr",
+          p: "1",
+          c: "89",
+          theme: "theme-orange",
+          col: "color-dark",
+        },
+      ];
+
+      let products = [];
+      for (let i = 0; i < 15; i++) {
+        let base = baseProducts[i % 5];
+        products.push({ ...base, name: base.name, id: i });
+      }
+
+      window.onload = function () {
+        const grid = document.getElementById("grid");
+        const header = document.querySelector(".header");
+
+        const TOTAL_HEIGHT = 1200;
+        const COLUMNS = 5;
+
+        const headerHeight = header.offsetHeight || 250;
+        const totalProducts = products.length;
+        const rowCount = Math.ceil(totalProducts / COLUMNS);
+
+        let padding = 30;
+        let gap = 20;
+
+        if (rowCount > 6) {
+          padding = 20;
+          gap = 15;
+        }
+        if (rowCount > 9) {
+          padding = 10;
+          gap = 5;
+        }
+
+        const availableHeight = TOTAL_HEIGHT - headerHeight - padding * 2;
+        const totalGapSpace = gap * (rowCount - 1);
+        let cellHeight = (availableHeight - totalGapSpace) / rowCount;
+
+        if (cellHeight > 280) cellHeight = 280;
+
+        let baseSize = cellHeight / 11;
+        if (cellHeight < 90) baseSize = cellHeight / 9;
+
+        grid.style.setProperty("--grid-padding", `${padding}px`);
+        grid.style.setProperty("--grid-row-height", `${cellHeight}px`);
+        grid.style.setProperty("--grid-gap", `${gap}px`);
+        grid.style.setProperty("--base-size", `${baseSize}px`);
+
+        products.forEach((p) => {
+          const html = `
+                    <div class="product-card ${p.theme}">
+                        <div class="paint-layer"></div>
+                        <div class="img-container">
+                            <img src="${carImg}" class="prod-img" alt="${p.name}">
+                        </div>
+                        <div class="badge-weight">
+                            <span class="bw-val">${p.w}</span>
+                            <span class="bw-unit">${p.u}</span>
+                        </div>
+                        <div class="badge-price">
+                            <div class="price-wrap">
+                                <span class="cur">€</span>
+                                <span class="p-main">${p.p}</span>
+                                <span class="p-cent">,${p.c}</span>
+                            </div>
+                        </div>
+                        <div class="text-container ${p.col}">
+                            <span class="brand-name">${p.name}</span>
+                            <span class="prod-desc">${p.desc}</span>
+                        </div>
+                    </div>
+                `;
+          grid.innerHTML += html;
+        });
+      };
+    </script>
+  </body>
+</html>

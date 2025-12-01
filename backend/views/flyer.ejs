@@ -4,121 +4,443 @@
     <meta charset="UTF-8" />
     <title><%= campaign.title %></title>
     <style>
+      @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap");
+
+      :root {
+        --primary: #008dd2;
+        --secondary: #f5b323;
+        --accent: #ec1d24;
+        --dark: #0f2b3e;
+        --muted: #6d7d96;
+        --card-shadow: 0 12px 35px rgba(15, 43, 62, 0.12);
+        --soft: #f2f6ff;
+      }
+
       * {
         box-sizing: border-box;
-        font-family: Arial, sans-serif;
+        font-family: "Poppins", Arial, sans-serif;
       }
+
       body {
         margin: 0;
-        padding: 0;
-        background: #f5f7fb;
+        padding: 18px;
+        background: linear-gradient(120deg, #def1ff 0%, #fff5f2 100%);
+        display: flex;
+        justify-content: center;
       }
+
       .page {
         width: 210mm;
-        height: 297mm;
-        padding: 10mm;
+        min-height: 297mm;
         background: #ffffff;
-      }
-      .header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 10mm;
-        border-bottom: 2px solid #eee;
-        padding-bottom: 4mm;
-      }
-      .logo {
-        font-size: 36px;
-        font-weight: 700;
-      }
-      .info {
-        text-align: right;
-        font-size: 12px;
-      }
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        grid-gap: 6mm;
-      }
-      .card {
-        border-radius: 8px;
-        padding: 4mm;
-        background: #fff;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+        border-radius: 22px;
+        padding: 12mm;
+        box-shadow: 0 25px 60px rgba(4, 41, 64, 0.12);
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
+        gap: 8mm;
       }
-      .card img {
-        max-width: 100%;
-        max-height: 60mm;
-        margin: 0 auto 4mm;
-        object-fit: contain;
-      }
-      .card-title {
-        font-size: 13px;
-        font-weight: 700;
-        margin-bottom: 2mm;
-      }
-      .card-desc {
-        font-size: 11px;
-        color: #555;
-        min-height: 15px;
-        margin-bottom: 3mm;
-      }
-      .card-bottom {
+
+      .hero-panel {
+        background: linear-gradient(125deg, #0097da, #01bfd8);
+        border-radius: 18px;
+        padding: 10mm;
         display: flex;
         align-items: center;
-        justify-content: space-between;
-      }
-      .price {
-        font-size: 18px;
-        font-weight: 800;
-      }
-      .price span {
-        font-size: 11px;
-        vertical-align: super;
-      }
-      .badge {
-        padding: 1mm 3mm;
-        border-radius: 999px;
-        font-size: 9px;
+        gap: 6mm;
         color: #fff;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .hero-panel::after {
+        content: "";
+        position: absolute;
+        width: 240px;
+        height: 240px;
+        border: 40px solid rgba(255, 255, 255, 0.08);
+        border-radius: 50%;
+        right: -120px;
+        top: -40px;
+      }
+
+      .brand-area {
+        z-index: 1;
+        flex: 1;
+      }
+
+      .brand-title {
+        font-size: 52px;
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: -1px;
+      }
+
+      .brand-title span {
+        display: block;
+        font-size: 26px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        font-weight: 600;
+        margin-top: 6px;
+      }
+
+      .hero-divider {
+        width: 64px;
+        height: 4px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.8);
+        margin: 10px 0;
+      }
+
+      .valid-text {
+        display: inline-flex;
+        padding: 6px 16px;
+        border-radius: 999px;
+        font-size: 14px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        background: rgba(255, 255, 255, 0.22);
+        font-weight: 600;
+      }
+
+      .store-photo {
+        flex: 0 0 230px;
+        z-index: 1;
+      }
+
+      .photo-frame {
+        width: 100%;
+        height: 140px;
+        border-radius: 18px;
+        background-image: linear-gradient(
+            135deg,
+            rgba(0, 0, 0, 0.4),
+            rgba(0, 0, 0, 0.25)
+          ),
+          url("https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=600&q=60");
+        background-size: cover;
+        background-position: center;
+        box-shadow: 0 20px 35px rgba(4, 19, 31, 0.35);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .photo-frame::after {
+        content: "Slinge 429-431 · Rotterdam";
+        position: absolute;
+        bottom: 12px;
+        left: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+      }
+
+      .contact-panel {
+        background: #fff;
+        border-radius: 18px;
+        padding: 8mm;
+        box-shadow: var(--card-shadow);
+        display: flex;
+        align-items: center;
+        gap: 8mm;
+      }
+
+      .contact-grid {
+        flex: 1;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6mm;
+      }
+
+      .contact-item {
+        display: flex;
+        gap: 10px;
+        background: var(--soft);
+        border-radius: 14px;
+        padding: 8px 12px;
+        align-items: center;
+      }
+
+      .icon-circle {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--primary);
+        color: #fff;
+        font-size: 15px;
         font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .contact-label {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--muted);
+      }
+
+      .contact-value {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--dark);
+      }
+
+      .store-badges {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .store-badge {
+        padding: 8px 18px;
+        border-radius: 12px;
+        color: #fff;
+        font-weight: 600;
+        font-size: 12px;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        text-align: center;
+      }
+
+      .store-badge.ios {
+        background: #11142d;
+      }
+
+      .store-badge.android {
+        background: #2cc56f;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 6mm;
+      }
+
+      .product-card {
+        background: #fff;
+        border-radius: 18px;
+        padding: 6mm;
+        box-shadow: var(--card-shadow);
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        min-height: 95mm;
+        overflow: hidden;
+      }
+
+      .product-card::before {
+        content: "";
+        position: absolute;
+        width: 160%;
+        height: 160%;
+        top: -80%;
+        left: -30%;
+        background: radial-gradient(
+          circle at 30% 30%,
+          rgba(0, 141, 210, 0.12),
+          transparent 60%
+        );
+        pointer-events: none;
+      }
+
+      .card-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 4mm;
+        position: relative;
+        z-index: 1;
+      }
+
+      .weight-chip {
+        padding: 5px 12px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #fff;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        background: var(--secondary);
+      }
+
+      .weight-chip.subtle {
+        background: #99a8c2;
+      }
+
+      .price-bubble {
+        width: 42mm;
+        height: 42mm;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, #ff8d8d, var(--accent));
+        box-shadow: 0 10px 18px rgba(236, 29, 36, 0.35);
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        font-weight: 700;
+        line-height: 1;
+      }
+
+      .price-bubble .currency {
+        font-size: 10px;
+        letter-spacing: 1px;
+        opacity: 0.9;
+      }
+
+      .price-bubble .price-value {
+        font-size: 22px;
+      }
+
+      .price-bubble .price-cents {
+        font-size: 12px;
+      }
+
+      .product-media {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 5mm;
+        position: relative;
+        z-index: 1;
+      }
+
+      .product-media img {
+        max-width: 100%;
+        max-height: 55mm;
+        object-fit: contain;
+      }
+
+      .media-placeholder {
+        width: 100%;
+        height: 50mm;
+        border: 1.4px dashed #c5d2eb;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        letter-spacing: 1px;
+        color: #9aa9c8;
+        text-transform: uppercase;
+      }
+
+      .product-info {
+        z-index: 1;
+      }
+
+      .product-name {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--dark);
+      }
+
+      .product-desc {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 3mm;
+        min-height: 18px;
+      }
+
+      .unit-chip {
+        margin-top: 2mm;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--accent);
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
       }
     </style>
   </head>
   <body>
     <div class="page">
-      <div class="header">
-        <div class="logo">Aytas Wereld Supermarkt</div>
-        <div class="info">
-          <div><%= campaign.validText || '' %></div>
-          <div>Tel: 06 41 98 40 65</div>
+      <div class="hero-panel">
+        <div class="brand-area">
+          <div class="brand-title">
+            Aytas
+            <span>Wereld Supermarkt</span>
+          </div>
+          <div class="hero-divider"></div>
+          <div class="valid-text">
+            <%= campaign.validText || 'Güncel kampanya' %>
+          </div>
+        </div>
+        <div class="store-photo">
+          <div class="photo-frame"></div>
+        </div>
+      </div>
+
+      <div class="contact-panel">
+        <div class="contact-grid">
+          <div class="contact-item">
+            <div class="icon-circle">T</div>
+            <div>
+              <div class="contact-label">Telefon</div>
+              <div class="contact-value">06 41 98 40 65</div>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="icon-circle">W</div>
+            <div>
+              <div class="contact-label">WhatsApp</div>
+              <div class="contact-value">06 41 98 40 65</div>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="icon-circle">A</div>
+            <div>
+              <div class="contact-label">Adres</div>
+              <div class="contact-value">Slinge 429-431 · Rotterdam</div>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="icon-circle">S</div>
+            <div>
+              <div class="contact-label">Sosyal Medya</div>
+              <div class="contact-value">@aytassupermarkt</div>
+            </div>
+          </div>
+        </div>
+        <div class="store-badges">
+          <div class="store-badge ios">App Store</div>
+          <div class="store-badge android">Google Play</div>
         </div>
       </div>
 
       <div class="grid">
-        <% campaign.products.forEach(function(p) { const product = p.product; %>
-        <div class="card">
-          <% if (product.imageUrl) { %>
-          <img src="<%= product.imageUrl %>" />
-          <% } %>
-          <div class="card-title"><%= product.name %></div>
-          <div class="card-desc"><%= product.description || '' %></div>
-          <div class="card-bottom">
-            <div class="price">
-              €<%= product.price.toFixed(2) %> <% if (product.unit) { %>
-              <span>/<%= product.unit %></span>
-              <% } %>
-            </div>
+        <% campaign.products.forEach(function (p) { const product = p.product;
+        const priceParts = product.price.toFixed(2).split('.'); %>
+        <div class="product-card">
+          <div class="card-top">
             <% if (product.badgeText) { %>
-            <div
-              class="badge"
-              style="background: <%= product.badgeColor || '#e74c3c' %>"
-            >
-              <%= product.badgeText %>
+            <div class="weight-chip"><%= product.badgeText %></div>
+            <% } else { %>
+            <div class="weight-chip subtle">Yeni</div>
+            <% } %>
+            <div class="price-bubble">
+              <div class="currency">€</div>
+              <div class="price-value"><%= priceParts[0] %></div>
+              <div class="price-cents"><%= priceParts[1] %></div>
             </div>
+          </div>
+
+          <div class="product-media">
+            <% if (product.imageUrl) { %>
+            <img src="<%= product.imageUrl %>" alt="<%= product.name %>" />
+            <% } else { %>
+            <div class="media-placeholder">Ürün görseli yakında</div>
+            <% } %>
+          </div>
+
+          <div class="product-info">
+            <div class="product-name"><%= product.name %></div>
+            <div class="product-desc"><%= product.description || '' %></div>
+            <% if (product.unit) { %>
+            <div class="unit-chip">/<%= product.unit %></div>
             <% } %>
           </div>
         </div>
