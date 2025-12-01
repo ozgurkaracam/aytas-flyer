@@ -88,6 +88,24 @@
   color: #b7b7b7;
 }
 
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.preview-header > div {
+  flex: 1 1 240px;
+}
+
+.download-btn {
+  align-self: flex-start;
+  white-space: nowrap;
+  min-width: 150px;
+}
+
 .panel--form {
   flex: 0 0 360px;
   max-width: 100%;
@@ -584,6 +602,10 @@
 }
 
 @media (max-width: 640px) {
+  .preview-header {
+    flex-direction: column;
+  }
+
   .form-actions {
     flex-direction: column;
   }

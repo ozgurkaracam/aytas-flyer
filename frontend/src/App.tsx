@@ -7,6 +7,7 @@ import {
   useState,
 } from "react";
 import type { ChangeEvent, CSSProperties, DragEvent } from "react";
+import { toPng } from "html-to-image";
 import "./App.css";
 
 type ThemeOption =
@@ -178,6 +179,7 @@ function App() {
     columns: 5,
   });
   const [isDragActive, setIsDragActive] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const productCount = products.length;
 
@@ -341,6 +343,32 @@ function App() {
     handleImageFile(file);
   };
 
+  const handleDownloadPreview = async () => {
+    if (!containerRef.current || isDownloading) return;
+    try {
+      setIsDownloading(true);
+      const dataUrl = await toPng(containerRef.current, {
+        cacheBust: true,
+        width: 1200,
+        height: 1200,
+        pixelRatio: 1,
+        style: {
+          transform: "scale(1)",
+          transformOrigin: "top left",
+        },
+      });
+      const link = document.createElement("a");
+      link.href = dataUrl;
+      const timestamp = new Date().toISOString().slice(0, 10);
+      link.download = `aytas-flyer-${timestamp}.png`;
+      link.click();
+    } catch (error) {
+      console.error("Önizleme indirilemedi", error);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   const handleAddProduct = () => {
     const payload: ProductInput = {
       ...formData,
@@ -463,7 +491,7 @@ function App() {
 
             <div className="field-row">
               <label>
-                Fiyat (Ana)
+                Fiyat (€)
                 <input
                   type="text"
                   value={formData.priceMain}
@@ -473,7 +501,7 @@ function App() {
                 />
               </label>
               <label>
-                Fiyat (Kuruş)
+                Fiyat (Cent)
                 <input
                   type="text"
                   value={formData.priceCents}
@@ -569,9 +597,19 @@ function App() {
         </section>
 
         <section className="panel panel--preview">
-          <header>
-            <h2>Canlı Önizleme</h2>
-            <p>Aytas Supermarkt</p>
+          <header className="preview-header">
+            <div>
+              <h2>Canlı Önizleme</h2>
+              <p>test.html tasarımının birebir React yorumu.</p>
+            </div>
+            <button
+              type="button"
+              className="btn primary download-btn"
+              onClick={handleDownloadPreview}
+              disabled={isDownloading}
+            >
+              {isDownloading ? "Hazırlanıyor..." : "PNG İndir"}
+            </button>
           </header>
           <div className="preview-wrapper">
             <div className="preview-frame" ref={containerRef}>
@@ -591,7 +629,7 @@ function App() {
                 {products.map((product, index) => {
                   const isSelected = index === selectedIndex;
                   return (
-                  <div
+                    <div
                       key={product.id}
                       className={`product-card ${product.theme} ${
                         isSelected ? "product-card--active" : ""
@@ -611,31 +649,31 @@ function App() {
                       {isSelected && (
                         <span className="edit-indicator">Düzenleniyor</span>
                       )}
-                    <div className="paint-layer"></div>
-                    <div className="img-container">
-                      <img
-                        src={product.image || DEFAULT_PRODUCT_IMAGE}
-                        className="prod-img"
-                        alt={product.name || "Ürün görseli"}
-                        onLoad={handleHeaderImageLoad}
-                      />
-                    </div>
-                    <div className="badge-weight">
-                      <span className="bw-val">{product.weightValue}</span>
-                      <span className="bw-unit">{product.weightUnit}</span>
-                    </div>
-                    <div className="badge-price">
-                      <div className="price-wrap">
-                        <span className="cur">€</span>
-                        <span className="p-main">{product.priceMain}</span>
-                        <span className="p-cent">,{product.priceCents}</span>
+                      <div className="paint-layer"></div>
+                      <div className="img-container">
+                        <img
+                          src={product.image || DEFAULT_PRODUCT_IMAGE}
+                          className="prod-img"
+                          alt={product.name || "Ürün görseli"}
+                          onLoad={handleHeaderImageLoad}
+                        />
+                      </div>
+                      <div className="badge-weight">
+                        <span className="bw-val">{product.weightValue}</span>
+                        <span className="bw-unit">{product.weightUnit}</span>
+                      </div>
+                      <div className="badge-price">
+                        <div className="price-wrap">
+                          <span className="cur">€</span>
+                          <span className="p-main">{product.priceMain}</span>
+                          <span className="p-cent">,{product.priceCents}</span>
+                        </div>
+                      </div>
+                      <div className={`text-container ${product.color}`}>
+                        <span className="brand-name">{product.name}</span>
+                        <span className="prod-desc">{product.desc}</span>
                       </div>
                     </div>
-                    <div className={`text-container ${product.color}`}>
-                      <span className="brand-name">{product.name}</span>
-                      <span className="prod-desc">{product.desc}</span>
-                    </div>
-                  </div>
                   );
                 })}
               </div>
