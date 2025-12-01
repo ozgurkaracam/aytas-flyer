@@ -260,6 +260,7 @@ function App() {
   const [previewScale, setPreviewScale] = useState(1);
   const [isFetchingProducts, setIsFetchingProducts] =
     useState(isSupabaseConfigured);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   const productCount = products.length;
   const saveQueueRef = useRef<Record<string, number>>({});
@@ -525,6 +526,7 @@ function App() {
   const handleImageFile = useCallback(
     async (file?: File | null) => {
       if (!file || !file.type.startsWith("image/")) return;
+      setIsUploadingImage(true);
 
       if (!supabase) {
         const reader = new FileReader();
@@ -532,7 +534,9 @@ function App() {
           if (typeof reader.result === "string") {
             applyProductPatch({ image: reader.result, imagePath: null });
           }
+          setIsUploadingImage(false);
         };
+        reader.onerror = () => setIsUploadingImage(false);
         reader.readAsDataURL(file);
         return;
       }
@@ -561,6 +565,8 @@ function App() {
         }
       } catch (error) {
         console.error("Görsel yüklenirken hata oluştu", error);
+      } finally {
+        setIsUploadingImage(false);
       }
     },
     [IMAGE_BUCKET, applyProductPatch, products, selectedIndex, supabase]
@@ -875,6 +881,11 @@ function App() {
                 onDrop={handleDrop}
                 onClick={handleDropzoneClick}
               >
+                {isUploadingImage && (
+                  <div className="image-dropzone__loader">
+                    <span>Yükleniyor…</span>
+                  </div>
+                )}
                 <input
                   ref={fileInputRef}
                   type="file"
