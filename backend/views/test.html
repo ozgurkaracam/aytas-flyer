@@ -296,8 +296,6 @@
 
       const carImg = "kasar.png";
 
-      const PRODUCT_COUNT = 6;
-
       const baseProducts = [
         {
           name: "Çaykur",
@@ -351,6 +349,8 @@
         },
       ];
 
+      const PRODUCT_COUNT = 15;
+
       let products = [];
       for (let i = 0; i < PRODUCT_COUNT; i++) {
         let base = baseProducts[i % baseProducts.length];
@@ -360,11 +360,13 @@
       window.onload = function () {
         const grid = document.getElementById("grid");
         const header = document.querySelector(".header");
+        const container = document.querySelector(".container");
 
-        const TOTAL_HEIGHT = 1200;
+        const FALLBACK_HEIGHT = 1200;
         const MAX_COLUMNS = 5;
 
         const headerHeight = header.offsetHeight || 250;
+        const totalHeight = container?.offsetHeight || FALLBACK_HEIGHT;
         const totalProducts = products.length;
         const baseColumnGuess = Math.floor(
           Math.sqrt(Math.max(totalProducts, 1))
@@ -390,11 +392,12 @@
           gap = 5;
         }
 
-        const availableHeight = TOTAL_HEIGHT - headerHeight - padding * 2;
+        const availableHeight = totalHeight - headerHeight - padding * 2;
         const totalGapSpace = gap * (rowCount - 1);
         let cellHeight = (availableHeight - totalGapSpace) / rowCount;
-
-        if (cellHeight > 280) cellHeight = 280;
+        if (!Number.isFinite(cellHeight) || cellHeight <= 0) {
+          cellHeight = availableHeight / Math.max(rowCount, 1);
+        }
 
         let baseSize = cellHeight / 11;
         if (cellHeight < 90) baseSize = cellHeight / 9;
