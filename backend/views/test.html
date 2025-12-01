@@ -85,19 +85,18 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        overflow: hidden;
+        overflow: visible;
       }
 
       .paint-layer {
         position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -60%) rotate(-10deg);
-        width: 70%;
-        height: 50%;
-        border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
-        opacity: 0.5;
-        z-index: 0;
+        opacity: 0.7;
+        border-radius: 20px;
+        transform: rotate(-8deg);
+        transform-origin: center;
+        width: 105%;
+        height: 65%;
+        z-index: 0 !important;
       }
 
       .theme-yellow .paint-layer {
@@ -123,10 +122,12 @@
         position: relative;
         width: 100%;
         height: 65%;
+        border-radius: 20px;
         display: flex;
         justify-content: center;
         align-items: center;
         z-index: 1;
+        background-color: white !important;
       }
 
       .prod-img {
@@ -139,10 +140,10 @@
 
       .badge-weight {
         position: absolute;
-        top: 2%;
-        right: 2%;
-        width: calc(var(--base-size) * 3);
-        height: calc(var(--base-size) * 3);
+        top: -5%;
+        right: -5%;
+        width: calc(var(--base-size) * 2);
+        height: calc(var(--base-size) * 2);
         background: #000;
         color: #fff;
         border-radius: 50%;
@@ -156,19 +157,19 @@
         line-height: 0.9;
       }
       .bw-val {
-        font-size: calc(var(--base-size) * 1.2);
+        font-size: calc(var(--base-size) * 0.8);
         font-weight: 900;
       }
       .bw-unit {
-        font-size: calc(var(--base-size) * 0.6);
+        font-size: calc(var(--base-size) * 0.5);
       }
 
       .badge-price {
         position: absolute;
-        bottom: 25%;
+        bottom: 30%;
         right: 0;
-        width: calc(var(--base-size) * 4.2);
-        height: calc(var(--base-size) * 4.2);
+        width: calc(var(--base-size) * 3.2);
+        height: calc(var(--base-size) * 3.2);
         background: #e60000;
         display: flex;
         justify-content: center;
@@ -214,12 +215,12 @@
         margin-top: 2px;
       }
       .p-main {
-        font-size: calc(var(--base-size) * 1.8);
+        font-size: calc(var(--base-size) * 1.2);
         font-weight: 400;
         line-height: 1;
       }
       .p-cent {
-        font-size: calc(var(--base-size) * 1);
+        font-size: calc(var(--base-size) * 0.8);
         margin-top: 2px;
         text-decoration: underline;
       }
