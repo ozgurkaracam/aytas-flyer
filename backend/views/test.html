@@ -65,7 +65,7 @@
         flex-grow: 1;
         padding: var(--grid-padding);
         display: grid;
-        grid-template-columns: repeat(5, 1fr);
+        grid-template-columns: repeat(var(--grid-columns, 5), 1fr);
         grid-auto-rows: var(--grid-row-height);
         gap: var(--grid-gap);
         overflow: hidden;
@@ -140,8 +140,8 @@
 
       .badge-weight {
         position: absolute;
-        top: -5%;
-        right: -5%;
+        top: 0;
+        right: 0;
         width: calc(var(--base-size) * 2);
         height: calc(var(--base-size) * 2);
         background: #000;
@@ -296,6 +296,8 @@
 
       const carImg = "kasar.png";
 
+      const PRODUCT_COUNT = 6;
+
       const baseProducts = [
         {
           name: "Çaykur",
@@ -350,9 +352,9 @@
       ];
 
       let products = [];
-      for (let i = 0; i < 15; i++) {
-        let base = baseProducts[i % 5];
-        products.push({ ...base, name: base.name, id: i });
+      for (let i = 0; i < PRODUCT_COUNT; i++) {
+        let base = baseProducts[i % baseProducts.length];
+        products.push({ ...base, id: i });
       }
 
       window.onload = function () {
@@ -360,11 +362,21 @@
         const header = document.querySelector(".header");
 
         const TOTAL_HEIGHT = 1200;
-        const COLUMNS = 5;
+        const MAX_COLUMNS = 5;
 
         const headerHeight = header.offsetHeight || 250;
         const totalProducts = products.length;
-        const rowCount = Math.ceil(totalProducts / COLUMNS);
+        const baseColumnGuess = Math.floor(
+          Math.sqrt(Math.max(totalProducts, 1))
+        );
+        const dynamicColumns = Math.max(
+          1,
+          Math.min(
+            MAX_COLUMNS,
+            Math.ceil(totalProducts / Math.max(baseColumnGuess, 1))
+          )
+        );
+        const rowCount = Math.max(1, Math.ceil(totalProducts / dynamicColumns));
 
         let padding = 30;
         let gap = 20;
@@ -391,6 +403,7 @@
         grid.style.setProperty("--grid-row-height", `${cellHeight}px`);
         grid.style.setProperty("--grid-gap", `${gap}px`);
         grid.style.setProperty("--base-size", `${baseSize}px`);
+        grid.style.setProperty("--grid-columns", `${dynamicColumns}`);
 
         products.forEach((p) => {
           const html = `
