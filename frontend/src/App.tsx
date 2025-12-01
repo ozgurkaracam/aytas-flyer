@@ -8,6 +8,12 @@ import {
 } from "react";
 import type { ChangeEvent, CSSProperties, DragEvent } from "react";
 import { toPng } from "html-to-image";
+import {
+  FLYER_TABLE,
+  IMAGE_BUCKET,
+  isSupabaseConfigured,
+  supabase,
+} from "./lib/supabaseClient";
 import "./App.css";
 
 type ThemeOption =
@@ -35,9 +41,63 @@ type ProductInput = {
   theme: ThemeOption;
   color: ColorOption;
   image: string;
+  imagePath?: string | null;
+  position: number;
 };
 
 type Product = ProductInput & { id: string };
+
+type ProductRow = {
+  id: string;
+  name: string;
+  desc: string;
+  weight_value: string;
+  weight_unit: string;
+  price_main: string;
+  price_cents: string;
+  theme: ThemeOption;
+  color: ColorOption;
+  image_url: string | null;
+  image_path: string | null;
+  position: number | null;
+};
+
+const mapRowToProduct = (row: ProductRow): Product => ({
+  id: row.id,
+  name: row.name,
+  desc: row.desc,
+  weightValue: row.weight_value,
+  weightUnit: row.weight_unit,
+  priceMain: row.price_main,
+  priceCents: row.price_cents,
+  theme: row.theme,
+  color: row.color,
+  image: row.image_url || DEFAULT_PRODUCT_IMAGE,
+  imagePath: row.image_path,
+  position:
+    typeof row.position === "number" && !Number.isNaN(row.position)
+      ? row.position
+      : 0,
+});
+
+const productToRow = (product: Product) => ({
+  name: product.name,
+  desc: product.desc,
+  weight_value: product.weightValue,
+  weight_unit: product.weightUnit,
+  price_main: product.priceMain,
+  price_cents: product.priceCents,
+  theme: product.theme,
+  color: product.color,
+  image_url: product.image,
+  image_path: product.imagePath ?? null,
+  position: product.position ?? 0,
+});
+
+const productToInsertRow = (product: Product) => ({
+  id: product.id,
+  ...productToRow(product),
+});
 
 const HEADER_IMAGE = "/headermarket.png";
 const DEFAULT_PRODUCT_IMAGE = "/kasar.png";
@@ -60,63 +120,75 @@ const COLOR_OPTIONS: { label: string; value: ColorOption }[] = [
   { label: "Mavi", value: "color-blue" },
 ];
 
-const baseProducts: ProductInput[] = [
-  {
-    name: "Çaykur",
-    desc: "Rize Çayı",
-    weightValue: "500",
-    weightUnit: "gr",
-    priceMain: "2",
-    priceCents: "99",
-    theme: "theme-yellow",
-    color: "color-gold",
-    image: DEFAULT_PRODUCT_IMAGE,
-  },
-  {
-    name: "Mahmut",
-    desc: "Basmati Pirinç",
-    weightValue: "5",
-    weightUnit: "kg",
-    priceMain: "9",
-    priceCents: "99",
-    theme: "theme-red",
-    color: "color-red",
-    image: DEFAULT_PRODUCT_IMAGE,
-  },
-  {
-    name: "Eker",
-    desc: "Kaşar Peyniri",
-    weightValue: "200",
-    weightUnit: "gr",
-    priceMain: "2",
-    priceCents: "49",
-    theme: "theme-pink",
-    color: "color-red",
-    image: DEFAULT_PRODUCT_IMAGE,
-  },
-  {
-    name: "Koç",
-    desc: "Parmak Sucuk",
-    weightValue: "450",
-    weightUnit: "gr",
-    priceMain: "5",
-    priceCents: "49",
-    theme: "theme-green",
-    color: "color-green",
-    image: DEFAULT_PRODUCT_IMAGE,
-  },
-  {
-    name: "Efe Paşa",
-    desc: "Dilimli Salam",
-    weightValue: "200",
-    weightUnit: "gr",
-    priceMain: "1",
-    priceCents: "89",
-    theme: "theme-orange",
-    color: "color-dark",
-    image: DEFAULT_PRODUCT_IMAGE,
-  },
-];
+const baseProducts: ProductInput[] = [];
+
+// const baseProducts: ProductInput[] = [
+//   {
+//     name: "Çaykur",
+//     desc: "Rize Çayı",
+//     weightValue: "500",
+//     weightUnit: "gr",
+//     priceMain: "2",
+//     priceCents: "99",
+//     theme: "theme-yellow",
+//     color: "color-gold",
+//     image: DEFAULT_PRODUCT_IMAGE,
+//     imagePath: null,
+//     position: 0,
+//   },
+//   {
+//     name: "Mahmut",
+//     desc: "Basmati Pirinç",
+//     weightValue: "5",
+//     weightUnit: "kg",
+//     priceMain: "9",
+//     priceCents: "99",
+//     theme: "theme-red",
+//     color: "color-red",
+//     image: DEFAULT_PRODUCT_IMAGE,
+//     imagePath: null,
+//     position: 1,
+//   },
+//   {
+//     name: "Eker",
+//     desc: "Kaşar Peyniri",
+//     weightValue: "200",
+//     weightUnit: "gr",
+//     priceMain: "2",
+//     priceCents: "49",
+//     theme: "theme-pink",
+//     color: "color-red",
+//     image: DEFAULT_PRODUCT_IMAGE,
+//     imagePath: null,
+//     position: 2,
+//   },
+//   {
+//     name: "Koç",
+//     desc: "Parmak Sucuk",
+//     weightValue: "450",
+//     weightUnit: "gr",
+//     priceMain: "5",
+//     priceCents: "49",
+//     theme: "theme-green",
+//     color: "color-green",
+//     image: DEFAULT_PRODUCT_IMAGE,
+//     imagePath: null,
+//     position: 3,
+//   },
+//   {
+//     name: "Efe Paşa",
+//     desc: "Dilimli Salam",
+//     weightValue: "200",
+//     weightUnit: "gr",
+//     priceMain: "1",
+//     priceCents: "89",
+//     theme: "theme-orange",
+//     color: "color-dark",
+//     image: DEFAULT_PRODUCT_IMAGE,
+//     imagePath: null,
+//     position: 4,
+//   },
+// ];
 
 const createId = () =>
   typeof crypto !== "undefined" && "randomUUID" in crypto
@@ -133,12 +205,14 @@ const emptyProduct: ProductInput = {
   theme: "theme-yellow",
   color: "color-gold",
   image: DEFAULT_PRODUCT_IMAGE,
+  imagePath: null,
+  position: 0,
 };
 
 const buildInitialProducts = (count: number): Product[] =>
   Array.from({ length: count }, (_, index) => {
     const base = baseProducts[index % baseProducts.length];
-    return { ...base, id: createId() };
+    return { ...base, id: createId(), position: index };
   });
 
 type Metrics = {
@@ -184,20 +258,56 @@ function App() {
   const [isDragActive, setIsDragActive] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [previewScale, setPreviewScale] = useState(1);
+  const [isFetchingProducts, setIsFetchingProducts] =
+    useState(isSupabaseConfigured);
 
   const productCount = products.length;
+  const saveQueueRef = useRef<Record<string, number>>({});
 
-  const updateProductField = useCallback(
-    (field: keyof ProductInput, value: string) => {
-      setFormData((prev) => ({ ...prev, [field]: value }));
+  const persistProduct = useCallback(
+    async (product: Product) => {
+      if (!supabase) return;
+      const { error } = await supabase
+        .from(FLYER_TABLE)
+        .update(productToRow(product))
+        .eq("id", product.id);
+      if (error) {
+        console.error("Ürün güncellenemedi", error);
+      }
+    },
+    [FLYER_TABLE, supabase]
+  );
+
+  const queueProductSave = useCallback(
+    (product: Product) => {
+      if (!supabase) return;
+      const pending = saveQueueRef.current[product.id];
+      if (pending) {
+        window.clearTimeout(pending);
+      }
+      saveQueueRef.current[product.id] = window.setTimeout(() => {
+        delete saveQueueRef.current[product.id];
+        void persistProduct(product);
+      }, 450);
+    },
+    [persistProduct, supabase]
+  );
+
+  const applyProductPatch = useCallback(
+    (patch: Partial<ProductInput>) => {
+      setFormData((prev) => ({ ...prev, ...patch }));
       setProducts((prev) => {
         if (!prev[selectedIndex]) return prev;
         const next = [...prev];
-        next[selectedIndex] = { ...next[selectedIndex], [field]: value };
+        const updated = { ...next[selectedIndex], ...patch };
+        next[selectedIndex] = updated;
+        if (supabase) {
+          queueProductSave(updated);
+        }
         return next;
       });
     },
-    [selectedIndex]
+    [queueProductSave, selectedIndex, supabase]
   );
 
   useEffect(() => {
@@ -209,6 +319,68 @@ function App() {
       setFormData(emptyProduct);
     }
   }, [products, selectedIndex]);
+
+  useEffect(() => {
+    if (!supabase) {
+      setIsFetchingProducts(false);
+      return;
+    }
+
+    const client = supabase;
+    let isMounted = true;
+
+    const loadProducts = async () => {
+      setIsFetchingProducts(true);
+      const { data, error } = await client
+        .from(FLYER_TABLE)
+        .select("*")
+        .order("position", { ascending: true });
+
+      if (!isMounted) return;
+
+      if (error) {
+        console.error("Ürünler getirilirken hata oluştu", error);
+        setIsFetchingProducts(false);
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        const defaults = buildInitialProducts(INITIAL_PRODUCT_COUNT);
+        setProducts(defaults);
+        setSelectedIndex(0);
+        try {
+          await client
+            .from(FLYER_TABLE)
+            .insert(defaults.map((product) => productToInsertRow(product)));
+        } catch (seedError) {
+          console.error(
+            "Varsayılan ürünler kaydedilirken hata oluştu",
+            seedError
+          );
+        } finally {
+          if (isMounted) {
+            setIsFetchingProducts(false);
+          }
+        }
+        return;
+      }
+
+      const mapped = data
+        .map(mapRowToProduct)
+        .sort((a, b) => a.position - b.position);
+      setProducts(mapped);
+      setSelectedIndex((prev) =>
+        mapped.length === 0 ? 0 : Math.min(prev, mapped.length - 1)
+      );
+      setIsFetchingProducts(false);
+    };
+
+    loadProducts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [supabase]);
 
   const computeGridMetrics = useCallback(() => {
     const totalHeight = containerRef.current?.offsetHeight ?? 1200;
@@ -289,6 +461,14 @@ function App() {
   }, []);
 
   useEffect(() => {
+    return () => {
+      Object.values(saveQueueRef.current).forEach((timeoutId) => {
+        window.clearTimeout(timeoutId);
+      });
+    };
+  }, []);
+
+  useEffect(() => {
     const handleResize = () => computeGridMetrics();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -332,33 +512,63 @@ function App() {
   const handleHeaderImageLoad = () => computeGridMetrics();
 
   const handleFieldChange =
-    (field: keyof ProductInput) =>
+    <T extends keyof ProductInput>(field: T) =>
     (
       event: ChangeEvent<
         HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
       >
     ) => {
       const { value } = event.target;
-      updateProductField(field, value);
+      applyProductPatch({ [field]: value } as Pick<ProductInput, T>);
     };
 
   const handleImageFile = useCallback(
-    (file?: File | null) => {
+    async (file?: File | null) => {
       if (!file || !file.type.startsWith("image/")) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        if (typeof reader.result === "string") {
-          updateProductField("image", reader.result);
+
+      if (!supabase) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (typeof reader.result === "string") {
+            applyProductPatch({ image: reader.result, imagePath: null });
+          }
+        };
+        reader.readAsDataURL(file);
+        return;
+      }
+
+      try {
+        const extension = file.name.split(".").pop() ?? "png";
+        const storagePath = `products/${createId()}.${extension}`;
+        const { error: uploadError } = await supabase.storage
+          .from(IMAGE_BUCKET)
+          .upload(storagePath, file, {
+            upsert: false,
+            cacheControl: "3600",
+          });
+        if (uploadError) throw uploadError;
+
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from(IMAGE_BUCKET).getPublicUrl(storagePath);
+
+        const previousPath = products[selectedIndex]?.imagePath;
+
+        applyProductPatch({ image: publicUrl, imagePath: storagePath });
+
+        if (previousPath && previousPath !== storagePath) {
+          await supabase.storage.from(IMAGE_BUCKET).remove([previousPath]);
         }
-      };
-      reader.readAsDataURL(file);
+      } catch (error) {
+        console.error("Görsel yüklenirken hata oluştu", error);
+      }
     },
-    [updateProductField]
+    [IMAGE_BUCKET, applyProductPatch, products, selectedIndex, supabase]
   );
 
   const handleImageInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    handleImageFile(file);
+    void handleImageFile(file);
     event.target.value = "";
   };
 
@@ -391,7 +601,7 @@ function App() {
     event.stopPropagation();
     setIsDragActive(false);
     const file = event.dataTransfer?.files?.[0];
-    handleImageFile(file);
+    void handleImageFile(file);
   };
 
   const waitForFrames = (count = 1) =>
@@ -433,30 +643,77 @@ function App() {
     }
   };
 
-  const handleAddProduct = () => {
-    const payload: ProductInput = {
+  const handleAddProduct = useCallback(async () => {
+    const newProduct: Product = {
       ...formData,
+      id: createId(),
       image: formData.image || DEFAULT_PRODUCT_IMAGE,
+      imagePath: formData.imagePath ?? null,
+      position: productCount,
     };
 
-    setProducts((prev) => [...prev, { ...payload, id: createId() }]);
+    setProducts((prev) => [...prev, newProduct]);
     setSelectedIndex(productCount);
-  };
+    setFormData(newProduct);
 
-  const handleDeleteProduct = () => {
-    setProducts((prev) => {
-      if (!prev[selectedIndex]) {
-        return prev;
+    if (!supabase) return;
+
+    try {
+      const { data, error } = await supabase
+        .from(FLYER_TABLE)
+        .insert([productToInsertRow(newProduct)])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        const persisted = mapRowToProduct(data);
+        setProducts((prev) =>
+          prev.map((product) =>
+            product.id === newProduct.id ? persisted : product
+          )
+        );
+        setFormData(persisted);
       }
-      const nextProducts = prev.filter((_, index) => index !== selectedIndex);
-      const nextIndex = Math.max(
-        0,
-        Math.min(selectedIndex, nextProducts.length - 1)
-      );
-      setSelectedIndex(nextIndex);
-      return nextProducts;
-    });
-  };
+    } catch (error) {
+      console.error("Yeni ürün eklenemedi", error);
+    }
+  }, [formData, productCount, supabase]);
+
+  const handleDeleteProduct = useCallback(async () => {
+    const target = products[selectedIndex];
+    if (!target) return;
+
+    const nextIndex = Math.max(0, Math.min(selectedIndex, products.length - 2));
+    setProducts((prev) => prev.filter((_, index) => index !== selectedIndex));
+    setSelectedIndex(nextIndex);
+
+    if (!supabase) return;
+
+    try {
+      const deletePromise = supabase
+        .from(FLYER_TABLE)
+        .delete()
+        .eq("id", target.id);
+      const removeImagePromise =
+        target.imagePath && target.imagePath.length > 0
+          ? supabase.storage.from(IMAGE_BUCKET).remove([target.imagePath])
+          : Promise.resolve({ error: null });
+
+      const [{ error: deleteError }, { error: imageError } = { error: null }] =
+        await Promise.all([deletePromise, removeImagePromise]);
+
+      if (deleteError) {
+        console.error("Ürün silinirken hata oluştu", deleteError);
+      }
+      if (imageError) {
+        console.error("Görsel silinirken hata oluştu", imageError);
+      }
+    } catch (error) {
+      console.error("Ürün silinemedi", error);
+    }
+  }, [IMAGE_BUCKET, products, selectedIndex, supabase]);
 
   const handleSelectProduct = (index: number) => {
     setSelectedIndex(index);
@@ -644,14 +901,14 @@ function App() {
               <button
                 type="button"
                 className="btn ghost"
-                onClick={handleAddProduct}
+                onClick={() => void handleAddProduct()}
               >
                 Yeni Ürün Ekle
               </button>
               <button
                 type="button"
                 className="btn danger"
-                onClick={handleDeleteProduct}
+                onClick={() => void handleDeleteProduct()}
                 disabled={!products[selectedIndex]}
               >
                 Ürünü Sil
@@ -665,6 +922,9 @@ function App() {
             <div>
               <h2>Canlı Önizleme</h2>
               <p>Aytas Supermarkt</p>
+              {isFetchingProducts && isSupabaseConfigured && (
+                <p className="sync-hint">Supabase verileri yükleniyor…</p>
+              )}
             </div>
             <button
               type="button"
