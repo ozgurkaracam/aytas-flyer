@@ -157,6 +157,8 @@ type GridStyle = CSSProperties & {
   "--base-size": string;
 };
 
+const PREVIEW_BASE_SIZE = 1200;
+
 function App() {
   const [products, setProducts] = useState<Product[]>(() =>
     buildInitialProducts(INITIAL_PRODUCT_COUNT)
@@ -170,6 +172,7 @@ function App() {
   const headerRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const previewWrapperRef = useRef<HTMLDivElement>(null);
 
   const [gridMetrics, setGridMetrics] = useState<Metrics>({
     padding: 30,
@@ -180,6 +183,7 @@ function App() {
   });
   const [isDragActive, setIsDragActive] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [previewScale, setPreviewScale] = useState(1);
 
   const productCount = products.length;
 
@@ -254,6 +258,36 @@ function App() {
     computeGridMetrics();
   }, [computeGridMetrics]);
 
+  useLayoutEffect(() => {
+    const wrapper = previewWrapperRef.current;
+    if (!wrapper) return undefined;
+
+    const updateScale = () => {
+      const width = wrapper.clientWidth || 1200;
+      const scale = Math.min(1, Math.max(width / 1200, 0.4));
+      setPreviewScale(scale);
+    };
+
+    updateScale();
+
+    let resizeObserver: ResizeObserver | null = null;
+
+    if (typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver(() => updateScale());
+      resizeObserver.observe(wrapper);
+    } else {
+      window.addEventListener("resize", updateScale);
+    }
+
+    return () => {
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      } else {
+        window.removeEventListener("resize", updateScale);
+      }
+    };
+  }, []);
+
   useEffect(() => {
     const handleResize = () => computeGridMetrics();
     window.addEventListener("resize", handleResize);
@@ -273,6 +307,26 @@ function App() {
       gridAutoRows: `${gridMetrics.rowHeight}px`,
     }),
     [gridMetrics]
+  );
+
+  const effectiveScale = isDownloading ? 1 : previewScale;
+
+  const previewStageStyle = useMemo(
+    () => ({
+      width: `${PREVIEW_BASE_SIZE * effectiveScale}px`,
+      height: `${PREVIEW_BASE_SIZE * effectiveScale}px`,
+    }),
+    [effectiveScale]
+  );
+
+  const previewFrameStyle = useMemo(
+    () => ({
+      transform: `scale(${effectiveScale})`,
+      transformOrigin: "top left",
+      width: `${PREVIEW_BASE_SIZE}px`,
+      height: `${PREVIEW_BASE_SIZE}px`,
+    }),
+    [effectiveScale]
   );
 
   const handleHeaderImageLoad = () => computeGridMetrics();
@@ -359,8 +413,8 @@ function App() {
       await waitForFrames(2);
       const dataUrl = await toPng(containerRef.current, {
         cacheBust: true,
-        width: 1200,
-        height: 1200,
+        width: PREVIEW_BASE_SIZE,
+        height: PREVIEW_BASE_SIZE,
         pixelRatio: 1,
         style: {
           transform: "scale(1)",
@@ -621,73 +675,81 @@ function App() {
               {isDownloading ? "Hazırlanıyor..." : "PNG İndir"}
             </button>
           </header>
-          <div className="preview-wrapper">
-            <div className="preview-frame" ref={containerRef}>
-              <div className="header" ref={headerRef}>
-                <img
-                  src={HEADER_IMAGE}
-                  alt="Header"
-                  onLoad={handleHeaderImageLoad}
-                />
-              </div>
+          <div className="preview-wrapper" ref={previewWrapperRef}>
+            <div className="preview-stage" style={previewStageStyle}>
               <div
-                className="products-grid"
-                id="react-grid"
-                ref={gridRef}
-                style={gridStyle}
+                className="preview-frame"
+                ref={containerRef}
+                style={previewFrameStyle}
               >
-                {products.map((product, index) => {
-                  const isSelected = index === selectedIndex;
-                  return (
-                    <div
-                      key={product.id}
-                      className={`product-card ${product.theme} ${
-                        isSelected && !isDownloading
-                          ? "product-card--active"
-                          : ""
-                      }`}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => handleSelectProduct(index)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" || event.key === " ") {
-                          event.preventDefault();
-                          handleSelectProduct(index);
-                        }
-                      }}
-                      aria-pressed={isSelected}
-                      aria-label={`${product.name} düzenle`}
-                    >
-                      {isSelected && !isDownloading && (
-                        <span className="edit-indicator">Düzenleniyor</span>
-                      )}
-                      <div className="paint-layer"></div>
-                      <div className="img-container">
-                        <img
-                          src={product.image || DEFAULT_PRODUCT_IMAGE}
-                          className="prod-img"
-                          alt={product.name || "Ürün görseli"}
-                          onLoad={handleHeaderImageLoad}
-                        />
-                      </div>
-                      <div className="badge-weight">
-                        <span className="bw-val">{product.weightValue}</span>
-                        <span className="bw-unit">{product.weightUnit}</span>
-                      </div>
-                      <div className="badge-price">
-                        <div className="price-wrap">
-                          <span className="cur">€</span>
-                          <span className="p-main">{product.priceMain}</span>
-                          <span className="p-cent">,{product.priceCents}</span>
+                <div className="header" ref={headerRef}>
+                  <img
+                    src={HEADER_IMAGE}
+                    alt="Header"
+                    onLoad={handleHeaderImageLoad}
+                  />
+                </div>
+                <div
+                  className="products-grid"
+                  id="react-grid"
+                  ref={gridRef}
+                  style={gridStyle}
+                >
+                  {products.map((product, index) => {
+                    const isSelected = index === selectedIndex;
+                    return (
+                      <div
+                        key={product.id}
+                        className={`product-card ${product.theme} ${
+                          isSelected && !isDownloading
+                            ? "product-card--active"
+                            : ""
+                        }`}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => handleSelectProduct(index)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            handleSelectProduct(index);
+                          }
+                        }}
+                        aria-pressed={isSelected}
+                        aria-label={`${product.name} düzenle`}
+                      >
+                        {isSelected && !isDownloading && (
+                          <span className="edit-indicator">Düzenleniyor</span>
+                        )}
+                        <div className="paint-layer"></div>
+                        <div className="img-container">
+                          <img
+                            src={product.image || DEFAULT_PRODUCT_IMAGE}
+                            className="prod-img"
+                            alt={product.name || "Ürün görseli"}
+                            onLoad={handleHeaderImageLoad}
+                          />
+                        </div>
+                        <div className="badge-weight">
+                          <span className="bw-val">{product.weightValue}</span>
+                          <span className="bw-unit">{product.weightUnit}</span>
+                        </div>
+                        <div className="badge-price">
+                          <div className="price-wrap">
+                            <span className="cur">€</span>
+                            <span className="p-main">{product.priceMain}</span>
+                            <span className="p-cent">
+                              ,{product.priceCents}
+                            </span>
+                          </div>
+                        </div>
+                        <div className={`text-container ${product.color}`}>
+                          <span className="brand-name">{product.name}</span>
+                          <span className="prod-desc">{product.desc}</span>
                         </div>
                       </div>
-                      <div className={`text-container ${product.color}`}>
-                        <span className="brand-name">{product.name}</span>
-                        <span className="prod-desc">{product.desc}</span>
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>

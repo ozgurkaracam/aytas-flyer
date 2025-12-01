@@ -107,12 +107,13 @@
 }
 
 .panel--form {
-  flex: 0 0 360px;
+  flex: 0 0 320px;
   max-width: 100%;
 }
 
 .panel--preview {
-  flex: 1 1 600px;
+  flex: 1 1 0;
+  min-width: 0;
   width: 100%;
 }
 
@@ -300,6 +301,14 @@
   width: 100%;
   overflow-x: auto;
   padding-bottom: 12px;
+  display: flex;
+  justify-content: center;
+}
+
+.preview-stage {
+  position: relative;
+  transform-origin: top left;
+  display: flex;
 }
 
 .preview-frame {
@@ -590,7 +599,7 @@
   color: #000;
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 900px) {
   .dashboard__content {
     flex-direction: column;
   }
