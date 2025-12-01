@@ -664,7 +664,7 @@ function App() {
           <header className="preview-header">
             <div>
               <h2>Canlı Önizleme</h2>
-              <p>test.html tasarımının birebir React yorumu.</p>
+              <p>Aytas Supermarkt</p>
             </div>
             <button
               type="button"
