@@ -490,24 +490,24 @@ function App() {
     [gridMetrics]
   );
 
-  const effectiveScale = isDownloading ? 1 : previewScale;
-
   const previewStageStyle = useMemo(
     () => ({
-      width: `${PREVIEW_BASE_SIZE * effectiveScale}px`,
-      height: `${PREVIEW_BASE_SIZE * effectiveScale}px`,
+      width: `${PREVIEW_BASE_SIZE * previewScale}px`,
+      height: `${PREVIEW_BASE_SIZE * previewScale}px`,
     }),
-    [effectiveScale]
+    [previewScale]
   );
+
+  const frameScale = isDownloading ? 1 : previewScale;
 
   const previewFrameStyle = useMemo(
     () => ({
-      transform: `scale(${effectiveScale})`,
+      transform: `scale(${frameScale})`,
       transformOrigin: "top left",
       width: `${PREVIEW_BASE_SIZE}px`,
       height: `${PREVIEW_BASE_SIZE}px`,
     }),
-    [effectiveScale]
+    [frameScale]
   );
 
   const handleHeaderImageLoad = () => computeGridMetrics();
