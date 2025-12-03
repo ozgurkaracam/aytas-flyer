@@ -812,6 +812,8 @@ function App() {
                   <option value="kg">kg</option>
                   <option value="ml">ml</option>
                   <option value="lt">lt</option>
+                  <option value="stuk">stuk</option>
+                  <option value="stuks">stuks</option>
                 </select>
               </label>
             </div>
