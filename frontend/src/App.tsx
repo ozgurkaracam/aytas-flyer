@@ -490,24 +490,24 @@ function App() {
     [gridMetrics]
   );
 
+  const renderScale = isDownloading ? 1 : previewScale;
+
   const previewStageStyle = useMemo(
     () => ({
-      width: `${PREVIEW_BASE_SIZE * previewScale}px`,
-      height: `${PREVIEW_BASE_SIZE * previewScale}px`,
+      width: `${PREVIEW_BASE_SIZE * renderScale}px`,
+      height: `${PREVIEW_BASE_SIZE * renderScale}px`,
     }),
-    [previewScale]
+    [renderScale]
   );
-
-  const frameScale = isDownloading ? 1 : previewScale;
 
   const previewFrameStyle = useMemo(
     () => ({
-      transform: `scale(${frameScale})`,
+      transform: `scale(${renderScale})`,
       transformOrigin: "top left",
       width: `${PREVIEW_BASE_SIZE}px`,
       height: `${PREVIEW_BASE_SIZE}px`,
     }),
-    [frameScale]
+    [renderScale]
   );
 
   const handleHeaderImageLoad = () => computeGridMetrics();
@@ -624,19 +624,32 @@ function App() {
 
   const handleDownloadPreview = async () => {
     if (!containerRef.current || isDownloading) return;
+
+    const node = containerRef.current;
+
+    const prevTransform = node.style.transform;
+    const prevWidth = node.style.width;
+    const prevHeight = node.style.height;
+
     try {
       setIsDownloading(true);
-      await waitForFrames(2);
-      const dataUrl = await toPng(containerRef.current, {
+
+      node.style.transform = "none";
+      node.style.width = `${PREVIEW_BASE_SIZE}px`;
+      node.style.height = `${PREVIEW_BASE_SIZE}px`;
+
+      const dataUrl = await toPng(node, {
         cacheBust: true,
         width: PREVIEW_BASE_SIZE,
         height: PREVIEW_BASE_SIZE,
         pixelRatio: 1,
         style: {
-          transform: "scale(1)",
-          transformOrigin: "top left",
+          transform: "none",
+          width: `${PREVIEW_BASE_SIZE}px`,
+          height: `${PREVIEW_BASE_SIZE}px`,
         },
       });
+
       const link = document.createElement("a");
       link.href = dataUrl;
       const timestamp = new Date().toISOString().slice(0, 10);
@@ -645,6 +658,9 @@ function App() {
     } catch (error) {
       console.error("Önizleme indirilemedi", error);
     } finally {
+      node.style.transform = prevTransform;
+      node.style.width = prevWidth;
+      node.style.height = prevHeight;
       setIsDownloading(false);
     }
   };
