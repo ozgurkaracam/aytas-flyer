@@ -610,18 +610,6 @@ function App() {
     void handleImageFile(file);
   };
 
-  const waitForFrames = (count = 1) =>
-    new Promise<void>((resolve) => {
-      const step = (remaining: number) => {
-        if (remaining <= 0) {
-          resolve();
-          return;
-        }
-        requestAnimationFrame(() => step(remaining - 1));
-      };
-      step(count);
-    });
-
   const handleDownloadPreview = async () => {
     if (!containerRef.current || isDownloading) return;
 
